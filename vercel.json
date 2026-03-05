@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/assets/:path*",
+      "destination": "/mesa-dobravel-of.lovable.app/assets/:path*"
+    }
+  ],
   "redirects": [
     {
       "source": "/mesa-dobravel-of.lovable.app",
