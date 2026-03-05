@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/assets/:path*",
-      "destination": "/mesa-dobravel-of.lovable.app/assets/:path*"
+      "destination": "https://mesa-dobravel-of.lovable.app/assets/:path*"
     }
   ],
   "redirects": [
