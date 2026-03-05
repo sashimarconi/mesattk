@@ -1,4 +1,5 @@
 const { getSpeedPagConfig } = require('./_speedpag');
+const { isAuthenticatedRequest } = require('./_admin-auth');
 
 function normalizeTransaction(raw) {
   const transaction = raw?.data && !raw.id ? raw.data : raw;
@@ -24,6 +25,11 @@ function isPaid(status) {
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  if (!isAuthenticatedRequest(req)) {
+    res.status(401).json({ error: 'Não autorizado.' });
     return;
   }
 

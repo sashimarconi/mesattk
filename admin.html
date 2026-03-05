@@ -29,7 +29,17 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div id="loginWrap" class="wrap" style="max-width: 420px; padding-top: 72px;">
+    <h1>Admin - Login</h1>
+    <div id="loginError" class="error"></div>
+    <div class="card">
+      <div class="label">Senha de acesso</div>
+      <input id="password" type="password" placeholder="Digite a senha" style="width: 100%; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;" />
+      <button id="loginBtn" style="width: 100%; background: #0f766e; color: #fff; border-color: #0f766e;">Entrar</button>
+    </div>
+  </div>
+
+  <div id="appWrap" class="wrap" style="display: none;">
     <h1>Admin de Pedidos</h1>
     <div id="error" class="error"></div>
 
@@ -44,6 +54,7 @@
       <button id="f-paid">Pagos</button>
       <button id="f-pending">Pendentes</button>
       <button id="refresh">Atualizar</button>
+      <button id="logout">Sair</button>
     </div>
 
     <table>
@@ -65,6 +76,28 @@
 
   <script>
     const state = { orders: [], filter: 'all' };
+
+    function setLoginError(message) {
+      const box = document.getElementById('loginError');
+      if (!message) {
+        box.style.display = 'none';
+        box.textContent = '';
+        return;
+      }
+
+      box.style.display = 'block';
+      box.textContent = message;
+    }
+
+    function showLogin() {
+      document.getElementById('loginWrap').style.display = 'block';
+      document.getElementById('appWrap').style.display = 'none';
+    }
+
+    function showApp() {
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('appWrap').style.display = 'block';
+    }
 
     function money(cents) {
       return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -161,12 +194,67 @@
       }
     }
 
+    async function checkSession() {
+      try {
+        const response = await fetch('/api/admin-session');
+        const data = await response.json();
+        return Boolean(data.authenticated);
+      } catch {
+        return false;
+      }
+    }
+
+    async function login() {
+      setLoginError('');
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/api/admin-login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Falha ao autenticar.');
+        }
+
+        showApp();
+        await loadOrders();
+      } catch (error) {
+        setLoginError(error.message || 'Erro ao autenticar.');
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/admin-logout', { method: 'POST' });
+      showLogin();
+      document.getElementById('password').value = '';
+      setError('');
+      setLoginError('');
+    }
+
     document.getElementById('f-all').addEventListener('click', () => setFilter('all'));
     document.getElementById('f-paid').addEventListener('click', () => setFilter('paid'));
     document.getElementById('f-pending').addEventListener('click', () => setFilter('pending'));
     document.getElementById('refresh').addEventListener('click', loadOrders);
+    document.getElementById('logout').addEventListener('click', logout);
+    document.getElementById('loginBtn').addEventListener('click', login);
+    document.getElementById('password').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') login();
+    });
 
-    loadOrders();
+    (async () => {
+      const authenticated = await checkSession();
+      if (authenticated) {
+        showApp();
+        await loadOrders();
+      } else {
+        showLogin();
+      }
+    })();
   </script>
 </body>
 </html>
