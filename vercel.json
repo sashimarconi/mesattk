@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/mesa-dobravel-of.lovable.app",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/mesa-dobravel-of.lovable.app/index.html",
+      "destination": "/",
+      "permanent": false
+    }
+  ]
+}
